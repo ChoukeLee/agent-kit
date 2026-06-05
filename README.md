@@ -118,6 +118,15 @@ Built from running [Maison Gourmande](https://github.com/ChoukeLee/maison-gourma
 
 Every one of these is caught by the validation layer. The AI never touches your data directly.
 
+## Support
+
+If Agent Kit helps you build safer AI applications, consider supporting its development:
+
+- **GitHub Sponsors** — monthly or one-time, 0% platform fee
+- **Buy Me a Coffee** — quick one-time support
+
+Every bit helps keep this project maintained and growing.
+
 ## License
 
 MIT

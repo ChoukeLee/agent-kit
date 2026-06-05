@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Kit Smoke Test — Screenshot</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1b2e;
+    display: flex; justify-content: center; align-items: center; min-height: 100vh;
+    font-family: "Cascadia Code", "Fira Code", "JetBrains Mono", "Consolas", monospace;
+    padding: 40px;
+  }
+  .terminal {
+    background: #0d0e1a;
+    border-radius: 12px;
+    width: 780px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+  .titlebar {
+    background: #1e1f2c;
+    padding: 12px 16px;
+    display: flex; align-items: center;
+    gap: 8px;
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.red { background: #ff5f56; }
+  .dot.yellow { background: #ffbd2e; }
+  .dot.green { background: #27ca40; }
+  .titlebar span {
+    color: #949599; font-size: 13px; margin-left: 12px;
+  }
+  .content {
+    padding: 24px;
+    font-size: 13px; line-height: 1.7;
+  }
+  .dim { color: #949599; }
+  .header { color: #67e8f9; font-weight: bold; }
+  .customer { color: #86efac; }
+  .ai { color: #c4b5fd; }
+  .cart { color: #fcd34d; }
+  .label { color: #f77f00; font-weight: bold; }
+  .separator { color: #5c5d61; }
+  .passed { color: #27ca40; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="terminal">
+  <div class="titlebar">
+    <div class="dot red"></div>
+    <div class="dot yellow"></div>
+    <div class="dot green"></div>
+    <span>agent-kit smoke test — PowerShell</span>
+  </div>
+  <div class="content">
+    <span class="header">AGENT KIT SMOKE TEST</span><br>
+    <span class="dim">Validating: AI understands → validate → execute → reply</span><br>
+    <br>
+    <span class="separator">============================================================</span><br>
+    <span class="label">TEST: Normal ordering flow</span><br>
+    <span class="separator">============================================================</span><br>
+    <br>
+    <span class="customer">🧑 CUSTOMER: I want a burger and a salad</span><br>
+    <span class="ai">🤖 AI: Both added! Smash Burger x1, Quinoa Power Salad x1</span><br>
+    <span class="cart">   Cart: [Smash Burger x1, Quinoa Power Salad x1]</span><br>
+    <br>
+    <span class="customer">🧑 CUSTOMER: What's in my cart?</span><br>
+    <span class="ai">🤖 AI: Smash Burger x1 (6,500 FCFA), Quinoa Power Salad x1 (5,500 FCFA)</span><br>
+    <span class="cart">   Total: 12,000 FCFA</span><br>
+    <br>
+    <span class="separator">============================================================</span><br>
+    <span class="label">TEST: Sold-out item protection ⬅ SCREENSHOT THIS</span><br>
+    <span class="separator">============================================================</span><br>
+    <br>
+    <span class="customer">🧑 CUSTOMER: I want the lobster roll please</span><br>
+    <span class="ai">🤖 AI: I'm sorry — the Lobster Roll is sold out today.</span><br>
+    <span class="ai">   Can I suggest something similar instead?</span><br>
+    <span class="cart">   Cart: [empty]  ← Validation layer blocked the call</span><br>
+    <br>
+    <span class="separator">============================================================</span><br>
+    <span class="label">TEST: Remove from cart</span><br>
+    <span class="separator">============================================================</span><br>
+    <br>
+    <span class="customer">🧑 CUSTOMER: I want a pizza</span><br>
+    <span class="ai">🤖 AI: Pepperoni Pizza x1 added to cart.</span><br>
+    <span class="cart">   Cart: [Pepperoni Pizza x1]</span><br>
+    <br>
+    <span class="customer">🧑 CUSTOMER: Actually remove the pizza</span><br>
+    <span class="ai">🤖 AI: Removed Pepperoni Pizza from cart.</span><br>
+    <span class="cart">   Cart: [empty]</span><br>
+    <br>
+    <span class="separator">============================================================</span><br>
+    <span class="passed">ALL TESTS PASSED ✓</span><br>
+    <span class="separator">============================================================</span><br>
+  </div>
+</div>
+
+</body>
+</html>
