@@ -1,0 +1,16 @@
+{
+  "name": "agent-kit-demo",
+  "version": "0.1.0",
+  "description": "A lightweight AI Agent framework — AI understands, code executes. Extracted from Maison Gourmande.",
+  "type": "module",
+  "scripts": {
+    "demo": "npx tsx demo.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.55.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
