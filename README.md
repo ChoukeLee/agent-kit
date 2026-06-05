@@ -1,25 +1,44 @@
 # Agent Kit
 
-A lightweight framework for building AI agents that use tool-calling **safely**.
+**AI understands intent. Code executes. Never let AI directly control state.**
 
-## The One Rule
+A lightweight TypeScript framework for building AI agents with safe tool-calling. Built from real production experience running an AI restaurant in Abidjan.
 
-> **AI understands intent. Code executes. Never let AI directly control state.**
+## The Problem
 
-Most AI agent frameworks let the LLM directly mutate your data. Agent Kit puts a validation wall between the AI's decisions and your code's execution.
+Most AI "agent" frameworks let the LLM directly mutate your data. This means:
 
-## Architecture
+- LLM hallucinates a parameter → corrupts your database
+- LLM calls a tool on a sold-out item → customer gets promised something impossible
+- LLM passes negative quantity → cart breaks
+
+Agent Kit puts a **validation wall** between what the AI decides and what your code executes.
+
+## How It Works
 
 ```
-User message → AI thinks → "I should call add_to_cart"
-                              ↓
-                     VALIDATION LAYER
-                     (Is the item real? In stock? Allowed?)
-                              ↓
-                     EXECUTION LAYER
-                     (Your code runs the mutation)
-                              ↓
-                     Result goes back to AI → AI replies
+🧑 "I want a burger and the lobster roll"
+        ↓
+🤖 AI decides: call add_to_cart("smash-burger"), call add_to_cart("lobster-roll")
+        ↓
+🛡️ VALIDATION: smash-burger → OK. lobster-roll → BLOCKED ("Sold out today")
+        ↓
+⚡ EXECUTION: Only smash-burger goes through
+        ↓
+🤖 AI sees the error, apologizes, recommends an alternative
+```
+
+## Proof It Works (Real Smoke Test Output)
+
+```
+🧑 CUSTOMER: I want a burger and a salad
+🤖 AI: Both added! Smash Burger x1, Quinoa Power Salad x1
+   Cart: [Smash Burger x1, Quinoa Power Salad x1]
+
+🧑 CUSTOMER: I want the lobster roll please
+🤖 AI: I'm sorry — the Lobster Roll is sold out today.
+          Can I suggest something similar instead?
+   Cart: [empty]  ← Validation layer blocked the call
 ```
 
 ## Quick Start
@@ -27,65 +46,78 @@ User message → AI thinks → "I should call add_to_cart"
 ```bash
 npm install
 export ANTHROPIC_API_KEY="your-key"
-npm run demo
+npx tsx smoke-test.ts     # See it working
+npm run demo               # Interactive chat
 ```
 
-## Usage
+## Usage (3 Steps)
 
 ```typescript
 import { processTurn, newConversation } from "./agent.js";
 import { ValidationError } from "./types.js";
-import type { Tool } from "./types.js";
 
-// 1. Define your tools with validation
-const tools: Tool<MyContext>[] = [
-  {
-    name: "add_to_cart",
-    description: "Add an item to cart",
-    inputSchema: {
-      type: "object",
-      properties: {
-        item_id: { type: "string" },
-      },
-      required: ["item_id"],
-    },
-    // Validate before executing — AI can't bypass this
-    validate: async (args, ctx) => {
-      const item = ctx.menu.find(i => i.id === args.item_id);
-      if (!item) throw new ValidationError("Item not found");
-      if (!item.available) throw new ValidationError("Sold out");
-    },
-    // Only runs if validation passes
-    execute: async (args, ctx) => {
-      ctx.cart.push(args.item_id);
-      return "Added to cart!";
-    },
+// 1. Define tools — each has validate + execute
+const tools = [{
+  name: "add_to_cart",
+  description: "Add an item to cart",
+  inputSchema: {
+    type: "object",
+    properties: { item_id: { type: "string" } },
+    required: ["item_id"],
   },
-];
+  // AI NEVER bypasses this
+  validate: async (args, ctx) => {
+    const item = ctx.menu.find(i => i.id === args.item_id);
+    if (!item) throw new ValidationError("Item not found");
+    if (!item.available) throw new ValidationError("Sold out");
+  },
+  // Only runs if validate passes
+  execute: async (args, ctx) => {
+    ctx.cart.push({ id: args.item_id });
+    return "Added to cart!";
+  },
+}];
 
-// 2. Create your agent
+// 2. Create agent config
 const config = {
-  provider: myProvider,       // Claude, OpenAI, DeepSeek, etc.
-  systemPrompt: "You are a helpful assistant.",
+  provider: createAnthropicProvider(apiKey),
+  systemPrompt: "You are a restaurant concierge...",
   tools,
-  createContext: () => ({ cart: [], menu: [...] }),
+  createContext: () => ({ cart: [], menu: myMenu }),
 };
 
-// 3. Process a user message
-const { reply, context } = await processTurn(
-  config,
-  userMessage,
-  history,
-  context
+// 3. Process a turn
+const { reply, context, history } = await processTurn(
+  config, userMessage, history, context
 );
+```
+
+## Providers
+
+- **Claude** (Anthropic) — built-in via `createAnthropicProvider`
+- **DeepSeek / OpenAI** — built-in via `createOpenAICompatibleProvider`
+- Any API that supports tool-calling — implement the `AiProvider` interface
+
+## Architecture
+
+```
+types.ts        Core types (Tool, ValidationError, AiProvider)
+agent.ts        Conversation loop (AI ↔ tool calls ↔ execution)
+providers.ts    AI API adapters (Claude, DeepSeek, OpenAI)
+demo.ts         Interactive restaurant demo
+smoke-test.ts   Automated validation tests
 ```
 
 ## Why This Exists
 
-Built from real production experience — running an AI restaurant ordering system in Abidjan. We learned that:
+Built from running [Maison Gourmande](https://github.com/ChoukeLee/maison-gourmande) — an AI restaurant ordering system in production. After 3 months of real customers, the patterns became clear:
 
-1. LLMs hallucinate tool parameters
-2. LLMs call tools on sold-out items
-3. LLMs try to add negative quantities
+1. **LLMs hallucinate tool parameters** → validate every input
+2. **LLMs call tools on unavailable items** → check state before executing
+3. **LLMs try invalid operations** → reject and tell AI to correct
 
-Validation-first design catches all of these **before** they touch your data.
+Every one of these is caught by the validation layer. The AI never touches your data directly.
+
+## License
+
+MIT
